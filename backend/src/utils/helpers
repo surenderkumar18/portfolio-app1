@@ -1,0 +1,23 @@
+const fs = require("fs");
+const path = require("path");
+
+const dataFilePath = path.join(__dirname, "../data/data.json"); // Adjust path as per your actual data file location
+
+// Helper function to read positions from file
+function readPositionsFromFile(callback) {
+  fs.readFile(dataFilePath, "utf8", (err, data) => {
+    if (err) {
+      return callback(err);
+    }
+    try {
+      const positions = JSON.parse(data);
+      callback(null, positions);
+    } catch (error) {
+      callback(error);
+    }
+  });
+}
+
+module.exports = {
+  readPositionsFromFile,
+};

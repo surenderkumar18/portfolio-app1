@@ -1,0 +1,7 @@
+backend:
+
+NODE_OPTIONS='--inspect' node src/server.js
+
+frontend:
+
+npm start
