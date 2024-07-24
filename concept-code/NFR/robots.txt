@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /private/
+Allow: /private/public-allowed.html
+
+User-agent: Googlebot
+Disallow: /no-google/

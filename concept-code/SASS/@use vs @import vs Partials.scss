@@ -1,0 +1,81 @@
+// Create SCSS Partials
+
+/**
+*   When we import common variables and mixins in both the main.scss file and the individual page-specific 
+    SCSS files (login.scss and product.scss), it can indeed lead to duplication of those definitions 
+    in the final compiled CSS. This isn't ideal, as it can increase the size of your CSS files unnecessarily.
+
+    `    @use './variables' as *;`
+    `    @use './mixins' as *;`
+*/
+
+// 0. main.scss
+
+@import "./variables";
+@import "./mixins";
+@import "./common";
+
+// instead of @import use @use
+@use "./variables" as *;
+@use "./mixins" as *;
+@use "./common";
+
+// 1. _variables.scss [This file is a Partial]
+
+$primary-color: #3498db;
+$secondary-color: #2ecc71;
+
+//  2. _mixins.scss [This file is a Partial]
+
+@mixin respond-to($media) {
+  @if $media == "phone" {
+    @media (max-width: 600px) {
+      @content;
+    }
+  } @else if $media == "tablet" {
+    @media (max-width: 768px) {
+      @content;
+    }
+  }
+}
+
+// 3. _common.scss [This file is a Partial]
+
+body {
+  font-family: Arial, sans-serif;
+  color: $primary-color;
+}
+
+// 4. login.scss
+
+@import "./variables";
+@import "./mixins";
+
+// instead of @import use @use
+
+@use "./variables" as *;
+@use "./mixins" as *;
+
+.login-container {
+  background-color: $primary-color;
+  @include respond-to("phone") {
+    background-color: $secondary-color;
+  }
+}
+
+// 5. product.scss
+
+@import "./variables";
+@import "./mixins";
+
+// instead of @import use @use
+
+@use "./variables" as *;
+@use "./mixins" as *;
+
+.product-container {
+  background-color: $secondary-color;
+  @include respond-to("tablet") {
+    background-color: $primary-color;
+  }
+}

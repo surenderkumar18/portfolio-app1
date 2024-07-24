@@ -1,0 +1,23 @@
+{
+  "folders": [
+	{
+		"path": "../../react-app/graphql-server"
+	},
+	{
+		"path": "../../react-app/mock-server"
+	},
+	{
+		"path": "../../react-app/shopping-app/my-shopping-app"
+	},
+	{
+		"path": ".."
+	},
+	{
+		"path": "../../microfrontend-app"
+	},
+	{
+		"path": "../../microfrontend-app1"
+	}
+],
+  "settings": {}
+}

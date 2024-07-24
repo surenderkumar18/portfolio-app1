@@ -1,0 +1,126 @@
+// variable
+$breakpoint-mobile: 480px;
+
+// @mixin & @content directive
+@mixin respond-to($media) {
+  @if $media == mobile {
+    @media (max-width: $breakpoint-mobile) {
+      @content; // The @content directive is used to include any styles passed to the mixin.
+    }
+  } @else if $media == tablet {
+    @media (max-width: $breakpoint-tablet) {
+      @content;
+    }
+  } @else if $media == desktop {
+    @media (max-width: $breakpoint-desktop) {
+      @content;
+    }
+  }
+}
+
+// @include @mixin
+.header {
+  padding: 20px;
+  @include respond-to(mobile) {
+    padding: 10px; /// @content directive
+  }
+}
+
+// SASS Functions
+
+@function add-mumbers($num1, $num2) {
+  @return $num1 + $num2;
+}
+
+.box1 {
+  padding: add-numbers(5px, 10px);
+}
+
+// SASS Inheritance
+
+.button {
+  background-color: #0000ff; // Blue
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1.5rem;
+}
+
+.button-secondary {
+  @extend .button;
+  background-color: #4caf50; // Green
+}
+
+// @if and @else directives
+@mixin heading($size) {
+  @if $size == large {
+    font-size: 4rem;
+  } @else if $size == medium {
+    font-size: 3rem;
+  } @else if $size == small {
+    font-size: 2rem;
+  } @else {
+    font-size: 1rem;
+  }
+}
+
+.h1 {
+  @include heading(large);
+}
+
+.h6 {
+  @include heading(small);
+}
+
+// Interpolation
+
+@mixin interpolation($editable, $val, $val2, $prop1, $prop2) {
+  background-#{$editable}: $val;
+  position: $val2;
+  #{$prop1}: 0px;
+  #{$prop2}: 0px;
+}
+
+.block1 {
+  @include interpolation("image", url("img.png"), absolute, top, right);
+}
+
+.block2 {
+  @include interpolation("color", lightgray, absolute, top, left);
+}
+
+// % placeholder
+%placeholder {
+  width: 100%;
+  height: 100%;
+}
+body {
+  @extend %placeholder;
+}
+p {
+  @extend %placeholder;
+}
+
+/**
+*
+  src/
+  │
+  ├── styles/
+  │   ├── _variables.scss
+  │   ├── _mixins.scss
+  │   ├── _common.scss
+  │   ├── login.scss
+  │   ├── product.scss
+  │   └── main.scss
+  │
+  ├── components/
+  │   ├── Login.js
+  │   ├── Product.js
+  │   └── App.js
+  │
+  └── index.js
+*
+*/
