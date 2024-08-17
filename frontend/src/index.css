@@ -1,7 +1,7 @@
 body {
   margin: 0;
 
-  font-family: monospace, "IBM-Plex-Sans-SemiBold", Arial, Helvetica, sans-serif;
+  font-family: "Roboto-Medium", Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: rgb(254, 241, 232);
@@ -16,7 +16,7 @@ code {
     monospace;
 }
 #root {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 40px auto;
 }
 h3 {
@@ -24,4 +24,7 @@ h3 {
   color: rgb(63 60 60 / 80%);
   font-weight: 100;
   margin: 0;
+}
+a {
+  color: blue;
 }

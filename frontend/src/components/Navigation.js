@@ -8,7 +8,7 @@ const NavContainer = styled.nav`
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 1400px;
+  max-width: 1600px;
   padding: 10px 0px;
   display: flex;
   justify-content: space-between;

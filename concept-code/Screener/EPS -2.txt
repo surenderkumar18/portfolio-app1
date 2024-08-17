@@ -1,0 +1,12 @@
+Net Profit latest quarter > 1.15*Net Profit preceding quarter AND
+
+Market Capitalization > 2000 AND
+Market Capitalization < 8000 AND
+
+FII holding + DII holding >8% AND
+Sales growth 3Years  > 15% AND
+Profit after tax latest quarter > 0 AND
+Pledged percentage < 5 AND
+Profit after tax latest quarter > 20 AND
+
+Profit growth 3Years > 15%

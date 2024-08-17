@@ -37,7 +37,7 @@ const Row = styled.tr`
 `;
 
 const HeaderCell = styled.th`
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.8);
   font-feature-settings: normal;
@@ -69,7 +69,7 @@ const HeaderSrCell = styled.th`
 `;
 const ColSrCell = styled.td`
   font-family: "IBM-Plex-Sans-SemiBold", Arial, Helvetica, sans-serif;
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.8);
   font-feature-settings: normal;
@@ -116,25 +116,31 @@ const PositionList = ({ isHistory }) => {
   const [selectedStrategy, setSelectedStrategy] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [visibleColumns, setVisibleColumns] = useState({
-    stockName: { visible: true, label: "Name" },
+    stockName: { visible: true, label: "Name", width: "132px" },
     stockSymbol: { visible: false, label: "Symbol" },
     profitLossPercentage: {
       visible: true,
       label: "P&L(%)",
-      textAlign: "center",
+      textAlign: "right",
+      width: "178px",
     },
-    buyDate: { visible: true, label: "Buy Date" },
-    buyPrice: { visible: true, label: "Buy Price", textAlign: "center" },
-    currentPrice: { visible: true, label: "Curr Price", textAlign: "center" },
-    totalStocks: { visible: true, label: "Qty." },
+    buyDate: { visible: false, label: "Buy Date" },
+    buyPrice: { visible: true, label: "Buy Price", textAlign: "right" },
+    currentPrice: { visible: true, label: "Curr Price", textAlign: "right" },
+    totalStocks: { visible: false, label: "Qty." },
     investmentAmount: {
-      visible: false,
+      visible: true,
       label: "Invest Amount",
       textAlign: "right",
     },
     currentValue: { visible: true, label: "Curr Value", textAlign: "right" },
-    stopLoss: { visible: true, label: "S/Loss", textAlign: "center" },
-    holdPeriod: { visible: false, label: "Hold Days", textAlign: "center" },
+    stopLoss: { visible: false, label: "S/Loss", textAlign: "right" },
+    holdPeriod: {
+      visible: true,
+      label: "Hold Days",
+      textAlign: "left",
+      width: "112px",
+    },
     sellDate: { visible: false, label: "Sell Date" },
     sellPrice: { visible: false, label: "Sell Price" },
     notes: { visible: false, label: "Notes" },
@@ -215,8 +221,7 @@ const PositionList = ({ isHistory }) => {
         sortConfig.key === "buyPrice" ||
         sortConfig.key === "currentValue" ||
         sortConfig.key === "stopLoss" ||
-        sortConfig.key === "totalStocks" ||
-        sortConfig.key === "currentValue"
+        sortConfig.key === "totalStocks"
       ) {
         return sortConfig.direction === "asc"
           ? parseFloat(a[sortConfig.key], 10) -
@@ -305,6 +310,7 @@ const PositionList = ({ isHistory }) => {
                   <HeaderCell
                     style={{
                       textAlign: visibleColumns[column]?.textAlign,
+                      width: visibleColumns[column]?.width,
                     }}
                     key={column}
                     onClick={() => handleSort(column)}

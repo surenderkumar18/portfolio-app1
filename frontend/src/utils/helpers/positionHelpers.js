@@ -32,3 +32,23 @@ export const getSLPercentageData = () => {
   }
   return percentArr;
 };
+
+export const formatAmount = (amount) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
+
+export const formatAndRoundofAmount = (amount) => {
+  // Ensure amount is a number and round it to the nearest whole number
+  const roundedAmount = Number(amount).toFixed(0);
+
+  // Format the rounded amount with currency formatting
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0, // No decimal places
+  }).format(roundedAmount);
+};

@@ -3,6 +3,10 @@ import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 import PositionImageModal from "./PositionImageModal"; // Assuming you have a Modal component
 import parse from "html-react-parser"; // Import the html-react-parser library
+import {
+  formatAmount,
+  formatAndRoundofAmount,
+} from "../utils/helpers/positionHelpers";
 
 const BoldCell = styled.div`
   font-weight: bold;
@@ -10,16 +14,20 @@ const BoldCell = styled.div`
 const TextCenterCell = styled.div`
   text-align: center;
 `;
-const TextRightCell = styled.div`
-  text-align: right;
+
+const TextBold = styled.div`
+  font-weight: bold;
+  margin-bottom: 4px;
+  display: inline-block;
+  width: 72px;
 `;
 
 const Cell = styled.td`
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.8);
   font-feature-settings: normal;
-  padding: 0.4rem 0.8rem;
+  padding: 0.8rem;
   line-height: 140%;
   border: 0;
   position: relative;
@@ -77,6 +85,93 @@ const ModalContent = styled.div`
   display: flex;
 `;
 
+const HoldingPeriodBoxContainer = styled.div`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+`;
+
+const HoldingPeriodBox = styled.div`
+  width: 16px;
+  height: 16px;
+  background-color: #4b85e6;
+  margin-top: 6px;
+  margin-right: 6px;
+  text-align: center;
+`;
+const HoldingPeriodCount = styled.span`
+  font-size: 11px;
+  color: #ffffff;
+  vertical-align: top;
+  line-height: 16px;
+`;
+
+const ProfitLossContainer = styled.div``;
+
+const ProfitLossPrice = styled.div`
+  color: #3b3939;
+  font-size: 0.9rem;
+  font-weight: 600;
+  display: inline-block;
+`;
+const UpArrow = styled.div`
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  position: relative;
+  &::after,
+  &::before {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+  }
+  &::before {
+    width: 2px;
+    height: 10px;
+    background-color: #009681;
+    top: 1px;
+    left: 5px;
+  }
+  &::after {
+    width: 8px;
+    height: 8px;
+    border: solid #009681;
+    border-width: 0 2px 2px 0;
+    transform: rotate(-135deg);
+    top: 0;
+    left: 2px;
+  }
+`;
+
+const DownArrow = styled.div`
+  width: 12px;
+  height: 12px;
+  display: inline-block;
+  position: relative;
+  &::after,
+  &::before {
+    content: "";
+    position: absolute;
+    box-sizing: border-box;
+  }
+  &::before {
+    width: 2px;
+    height: 10px;
+    background-color: #e41a1a;
+    top: 1px;
+    left: 5px;
+  }
+  &::after {
+    width: 8px;
+    height: 8px;
+    border: solid #e41a1a;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    top: 5px;
+    left: 2px;
+  }
+`;
+
 const formatDate = (date) => {
   if (!date) return "";
   const options = { day: "numeric", month: "long", year: "numeric" };
@@ -87,30 +182,50 @@ const calculateProfitLossPercentage = (buyPrice, currentPrice) => {
   const profitLoss = ((currentPrice - buyPrice) / buyPrice) * 100;
   return profitLoss.toFixed(2);
 };
+const calculateProfitLossAmount = (buyPrice, currentPrice, totalStocks) => {
+  const profitLoss = (currentPrice - buyPrice) * totalStocks;
+  return profitLoss.toFixed(2);
+};
 
 const getProfitLossColor = (profitLoss) => {
-  if (profitLoss > 20) return "darkgreen";
-  if (profitLoss > 10) return "lightgreen";
   if (profitLoss >= 0) return "green";
-  if (profitLoss > -10) return "lightcoral";
-  if (profitLoss > -20) return "indianred";
-  return "darkred";
+  return "#b61515";
+};
+const getProfitLossAmntColor = (profitLoss) => {
+  if (profitLoss > 0) return "green";
+  return "#e41a1a";
 };
 
 const calculateInvestmentAmount = (buyPrice, totalStocks) => {
-  return (buyPrice * totalStocks).toFixed(2);
+  // Calculate the investment amount
+  const investmentAmount = buyPrice * totalStocks;
+  return investmentAmount.toFixed(2);
 };
 
 const calculateCurrentValue = (currentPrice, totalStocks) => {
-  return (currentPrice * totalStocks).toFixed(2);
+  // Calculate the current amount
+  const currentValue = currentPrice * totalStocks;
+  return currentValue.toFixed(2);
 };
 
-const calculateHoldingPeriod = (buyDate) => {
+const calculateHoldingPeriod = (buyDate, sellDate, isDeleted) => {
+  console.log(buyDate, sellDate, isDeleted);
   const buy = new Date(buyDate);
-  const today = new Date();
-  const diffTime = Math.abs(today - buy);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return diffDays;
+  const today = isDeleted === "true" ? new Date(sellDate) : new Date();
+  let holdingPeriod = 0;
+  console.log(today);
+
+  while (buy <= today) {
+    const dayOfWeek = buy.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      // Increment holding period if it's a weekday
+      holdingPeriod++;
+    }
+    // Move to the next day
+    buy.setDate(buy.getDate() + 1);
+  }
+
+  return holdingPeriod;
 };
 
 const PositionItem = ({
@@ -156,39 +271,65 @@ const PositionItem = ({
       case "sellDate":
         return formatDate(position.sellDate);
       case "buyPrice":
-        return position.buyPrice;
+        return formatAmount(position.buyPrice);
       case "sellPrice":
-        return position.sellPrice;
+        return formatAmount(position.sellPrice);
       case "currentPrice":
-        return position.currentPrice;
+        return formatAmount(position.currentPrice);
       case "profitLossPercentage":
         const profitLoss = calculateProfitLossPercentage(
           position.buyPrice,
           position.currentPrice
         );
+        const profitLossAmnt = calculateProfitLossAmount(
+          position.buyPrice,
+          position.currentPrice,
+          position.totalStocks
+        );
         return (
-          <BoldCell>
-            <span style={{ color: getProfitLossColor(profitLoss) }}>
+          <ProfitLossContainer>
+            <ProfitLossPrice>
+              {formatAndRoundofAmount(
+                profitLossAmnt >= 0 ? `+${profitLossAmnt}` : `${profitLossAmnt}`
+              )}
+            </ProfitLossPrice>
+            {profitLoss >= 0 ? (
+              <UpArrow style={{ marginLeft: "10px" }} />
+            ) : (
+              <DownArrow style={{ marginLeft: "10px" }} />
+            )}
+            <TextBold style={{ color: getProfitLossColor(profitLoss) }}>
               {profitLoss >= 0 ? `+${profitLoss}%` : `${profitLoss}%`}
-            </span>
-          </BoldCell>
+            </TextBold>
+          </ProfitLossContainer>
         );
       case "totalStocks":
         return position.totalStocks;
       case "investmentAmount":
-        return calculateInvestmentAmount(
-          position.buyPrice,
-          position.totalStocks
+        return formatAmount(
+          calculateInvestmentAmount(position.buyPrice, position.totalStocks)
         );
       case "currentValue":
-        return calculateCurrentValue(
-          position.currentPrice,
-          position.totalStocks
+        return formatAmount(
+          calculateCurrentValue(position.currentPrice, position.totalStocks)
         );
       case "stopLoss":
-        return <TextCenterCell>{position.stopLoss}</TextCenterCell>;
+        return position.stopLoss;
       case "holdPeriod":
-        return calculateHoldingPeriod(position.buyDate);
+        const holdingPeriod = calculateHoldingPeriod(
+          position.buyDate,
+          position.sellDate,
+          position.isDeleted
+        );
+        return (
+          <HoldingPeriodBoxContainer>
+            {Array.from({ length: holdingPeriod }, (_, index) => (
+              <HoldingPeriodBox key={index}>
+                <HoldingPeriodCount>{index + 1}</HoldingPeriodCount>
+              </HoldingPeriodBox>
+            ))}
+          </HoldingPeriodBoxContainer>
+        );
       case "notes":
         return parse(position.notes); // Parse and render the HTML content
       case "images":
