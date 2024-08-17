@@ -1,313 +1,336 @@
-import React, { useState, useMemo } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
+import React, { useState } from "react";
 import styled from "styled-components";
-import PositionModal from "./PositionModal";
-import PositionItem from "./PositionItem";
-import Summary from "./Summary";
-import { getStrategyData } from "../utils/helpers/positionHelpers";
+import { Link, useNavigate } from "react-router-dom";
+import PositionImageModal from "./PositionImageModal"; // Assuming you have a Modal component
+import parse from "html-react-parser"; // Import the html-react-parser library
 
-const Container = styled.div``;
-
-const Table = styled.table`
-  color: #212529;
-  border-collapse: collapse;
-  width: 100%;
-  border: 0.1rem solid rgba(0, 0, 0, 0.08);
+const BoldCell = styled.div`
+  font-weight: bold;
+`;
+const TextCenterCell = styled.div`
+  text-align: center;
 `;
 
-const HeaderRow = styled.thead`
-  color: #212529;
+const TextBold = styled.div`
+  font-weight: bold;
+  margin-bottom: 4px;
 `;
 
-const TableBody = styled.tbody`
-  color: #212529;
+const Cell = styled.td`
+  font-size: 1rem;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.8);
+  font-feature-settings: normal;
+  padding: 0.8rem;
+  line-height: 140%;
+  border: 0;
+  position: relative;
+  border-right: 1px #fcfbfb solid;
 `;
 
-const Row = styled.tr`
-  padding: 10px;
-  border-bottom: 1px solid #eff2f7;
-  background-color: ${({ className }) =>
-    className === "even" ? "#f6f5f5" : "#ffffff"};
-
-  &.last {
-    border-bottom: 1px solid #dde0e3;
+const Button = styled.button`
+  color: #dc2626;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+  &:hover {
+    background-color: #b91c1c;
+    color: #ffffff;
   }
 `;
 
-const HeaderCell = styled.th`
+const ImageList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-width: 120px;
+`;
+
+const ImageListItem = styled.li`
+  margin: 2px;
+  float: left;
+  transition: transform 0.3s ease-in-out; /* Add smooth transition effect */
+  &:hover {
+    transform: scale(1.1); /* Scale up on hover */
+    z-index: 1; /* Ensure it's on top of other items */
+  }
+`;
+
+const Image = styled.img`
+  width: 34px;
+  height: auto;
+  cursor: pointer;
+`;
+
+const LargeImageContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+`;
+
+const LargeImage = styled.img`
+  max-width: 100%;
+  max-height: 100%;
+`;
+
+const ModalContent = styled.div`
+  display: flex;
+`;
+
+const HoldingPeriodBoxContainer = styled.div`
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+`;
+
+const HoldingPeriodBox = styled.div`
+  width: 16px;
+  height: 16px;
+  background-color: #4b85e6;
+  margin-top: 6px;
+  margin-right: 6px;
+  text-align: center;
+`;
+const HoldingPeriodCount = styled.span`
+  font-size: 11px;
+  color: #ffffff;
+  vertical-align: top;
+  line-height: 16px;
+`;
+
+const ProfitLossContainer = styled.div``;
+
+const ProfitLossPrice = styled.div`
+  color: #3b3939;
   font-size: 0.9rem;
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.8);
-  font-feature-settings: normal;
-  line-height: 140%;
-  padding: 0.8rem;
-  border-bottom: 1px solid #eff2f7;
-  border-top: 1.5px solid rgba(0, 0, 0, 0.15);
-  text-align: left;
-  cursor: pointer;
-  border-right: 1px #fcfbfb solid;
-  background-color: #cccccc;
-`;
-const HeaderSrCell = styled.th`
-  font-family: "IBM-Plex-Sans-SemiBold", Arial, Helvetica, sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.8);
-  font-feature-settings: normal;
-  line-height: 140%;
-  padding: 0.8rem;
-  border-bottom: 1px solid #eff2f7;
-  border-top: 1.5px solid rgba(0, 0, 0, 0.15);
-  text-align: left;
-  cursor: pointer;
-  border-right: 1px #fcfbfb solid;
-  width: 20px;
-  text-align: center;
-  background-color: #cccccc;
-`;
-const ColSrCell = styled.td`
-  font-family: "IBM-Plex-Sans-SemiBold", Arial, Helvetica, sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.8);
-  font-feature-settings: normal;
-  line-height: 140%;
-  padding: 0.4rem 0.8rem;
-  border-bottom: 1px solid #eff2f7;
-  border-top: 1.5px solid rgba(0, 0, 0, 0.15);
-  text-align: left;
-  cursor: pointer;
-  border-right: 1px #fcfbfb solid;
-  width: 20px;
-  text-align: center;
-  background-color: #cccccc;
 `;
 
-const CheckboxContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 16px;
-  margin-bottom: 16px;
-`;
+const formatDate = (date) => {
+  if (!date) return "";
+  const options = { day: "numeric", month: "long", year: "numeric" };
+  return new Date(date).toLocaleDateString("en-GB", options);
+};
 
-const CheckboxItem = styled.div`
-  margin-right: 10px;
-`;
+const calculateProfitLossPercentage = (buyPrice, currentPrice) => {
+  const profitLoss = ((currentPrice - buyPrice) / buyPrice) * 100;
+  return profitLoss.toFixed(2);
+};
 
-const CheckboxLabel = styled.label`
-  font-size: 12px;
-`;
+const calculateProfitLossAmount = (buyPrice, currentPrice, totalStocks) => {
+  const profitLoss = (currentPrice - buyPrice) * totalStocks;
+  return profitLoss.toFixed(2);
+};
 
-const FilterContainer = styled.div`
-  margin: 16px 0;
-`;
+const getProfitLossColor = (profitLoss) => {
+  if (profitLoss > 20) return "darkgreen";
+  if (profitLoss > 10) return "lightgreen";
+  if (profitLoss >= 0) return "green";
+  if (profitLoss > -10) return "#e41a1a";
+  if (profitLoss > -20) return "#b61515";
+  return "#b61515";
+};
 
-const PositionList = ({ isHistory }) => {
-  const queryClient = useQueryClient();
-  const [selectedPosition, setSelectedPosition] = useState(null);
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const [selectedStrategy, setSelectedStrategy] = useState("");
-  const [visibleColumns, setVisibleColumns] = useState({
-    stockName: { visible: true, label: "Name" },
-    stockSymbol: { visible: false, label: "Symbol" },
-    profitLossPercentage: {
-      visible: true,
-      label: "P&L(%)",
-      textAlign: "center",
-    },
-    buyDate: { visible: true, label: "Buy Date" },
-    buyPrice: { visible: true, label: "Buy Price", textAlign: "center" },
-    currentPrice: { visible: true, label: "Curr Price", textAlign: "center" },
-    totalStocks: { visible: true, label: "Qty." },
-    investmentAmount: {
-      visible: false,
-      label: "Invest Amount",
-      textAlign: "right",
-    },
-    currentValue: { visible: true, label: "Curr Value", textAlign: "right" },
-    stopLoss: { visible: true, label: "S/Loss", textAlign: "center" },
-    holdPeriod: { visible: false, label: "Hold Days", textAlign: "center" },
-    sellDate: { visible: false, label: "Sell Date" },
-    sellPrice: { visible: false, label: "Sell Price" },
-    notes: { visible: false, label: "Notes" },
-    images: { visible: true, label: "Images" },
-    edit: { visible: true, label: "Edit", textAlign: "center" },
-    delete: { visible: true, label: "Delete", textAlign: "center" },
-    view: { visible: true, label: "View", textAlign: "center" },
-  });
+const getProfitLossAmntColor = (profitLoss) => {
+  if (profitLoss > 0) return "green";
+  return "#e41a1a";
+};
 
-  const fetchPositions = async (isHistory) => {
-    const endpoint = isHistory
-      ? "http://localhost:3041/api/positions?isDeleted=true"
-      : "http://localhost:3041/api/positions";
-    const { data } = await axios.get(endpoint);
-    return data;
-  };
+const calculateInvestmentAmount = (buyPrice, totalStocks) => {
+  const investmentAmount = buyPrice * totalStocks;
+  return investmentAmount.toFixed(2);
+};
 
-  const { data: positions, isLoading } = useQuery({
-    queryKey: [isHistory ? "historyPositions" : "positions"],
-    queryFn: () => fetchPositions(isHistory),
-  });
+const calculateCurrentValue = (currentPrice, totalStocks) => {
+  const currentValue = currentPrice * totalStocks;
+  return currentValue.toFixed(2);
+};
 
-  const deleteMutation = useMutation({
-    mutationFn: (id) =>
-      axios.delete(`http://localhost:3041/api/positions/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["positions"]);
-    },
-  });
+const calculateHoldingPeriod = (buyDate, sellDate, isDeleted) => {
+  const buy = new Date(buyDate);
+  const today = isDeleted === "true" ? new Date(sellDate) : new Date();
+  let holdingPeriod = 0;
 
-  const toggleColumnVisibility = (column) => {
-    setVisibleColumns((prev) => ({
-      ...prev,
-      [column]: {
-        ...prev[column],
-        visible: !prev[column].visible,
-      },
-    }));
-  };
-
-  const handleSort = (column) => {
-    let direction = "asc";
-    if (sortConfig.key === column && sortConfig.direction === "asc") {
-      direction = "desc";
+  while (buy <= today) {
+    const dayOfWeek = buy.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      holdingPeriod++;
     }
-    setSortConfig({ key: column, direction });
+    buy.setDate(buy.getDate() + 1);
+  }
+
+  return holdingPeriod;
+};
+
+const formatAmount = (amount) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 2,
+  }).format(amount);
+};
+
+const PositionItem = ({
+  position,
+  field,
+  onDelete,
+  onView,
+  customClass,
+  serialNo,
+  textAlign,
+}) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const navigate = useNavigate();
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      onDelete();
+    }
   };
 
-  const handleStrategyChange = (event) => {
-    setSelectedStrategy(event.target.value);
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setModalOpen(true);
   };
 
-  const filteredPositions = useMemo(() => {
-    if (!positions || !selectedStrategy) return positions;
-    return positions.filter(
-      (position) => position.strategy === selectedStrategy
-    );
-  }, [positions, selectedStrategy]);
+  const closeModal = () => {
+    setModalOpen(false);
+    setSelectedImage(null);
+  };
 
-  const sortedPositions = useMemo(() => {
-    if (!filteredPositions || !sortConfig.key) return filteredPositions;
-
-    return [...filteredPositions].sort((a, b) => {
-      if (sortConfig.key === "stockName" || sortConfig.key === "stockSymbol") {
-        return sortConfig.direction === "asc"
-          ? a[sortConfig.key].localeCompare(b[sortConfig.key], undefined, {
-              numeric: true,
-              sensitivity: "base",
-            })
-          : b[sortConfig.key].localeCompare(a[sortConfig.key], undefined, {
-              numeric: true,
-              sensitivity: "base",
-            });
-      }
-
-      if (
-        sortConfig.key === "buyDate" ||
-        sortConfig.key === "sellDate" ||
-        sortConfig.key === "createdDate"
-      ) {
-        return sortConfig.direction === "asc"
-          ? new Date(a[sortConfig.key]) - new Date(b[sortConfig.key])
-          : new Date(b[sortConfig.key]) - new Date(a[sortConfig.key]);
-      }
-
-      if (
-        sortConfig.key === "buyPrice" ||
-        sortConfig.key === "currentPrice" ||
-        sortConfig.key === "profitLossPercentage"
-      ) {
-        return sortConfig.direction === "asc"
-          ? a[sortConfig.key] - b[sortConfig.key]
-          : b[sortConfig.key] - a[sortConfig.key];
-      }
-      return sortConfig.direction === "asc"
-        ? a[sortConfig.key] - b[sortConfig.key]
-        : b[sortConfig.key] - a[sortConfig.key];
-    });
-  }, [filteredPositions, sortConfig]);
+  const renderField = () => {
+    switch (field) {
+      case "serialNo":
+        return serialNo;
+      case "stockName":
+        return <BoldCell>{position.stockName}</BoldCell>;
+      case "stockSymbol":
+        return position.stockSymbol;
+      case "buyDate":
+        return formatDate(position.buyDate);
+      case "sellDate":
+        return formatDate(position.sellDate);
+      case "buyPrice":
+        return formatAmount(position.buyPrice);
+      case "sellPrice":
+        return formatAmount(position.sellPrice);
+      case "currentPrice":
+        return formatAmount(position.currentPrice);
+      case "profitLossPercentage":
+        const profitLoss = calculateProfitLossPercentage(
+          position.buyPrice,
+          position.currentPrice
+        );
+        const profitLossAmnt = calculateProfitLossAmount(
+          position.buyPrice,
+          position.currentPrice,
+          position.totalStocks
+        );
+        return (
+          <ProfitLossContainer>
+            <TextBold style={{ color: getProfitLossColor(profitLoss) }}>
+              {profitLoss >= 0 ? `+${profitLoss}%` : `${profitLoss}%`}
+            </TextBold>
+            <ProfitLossPrice>{formatAmount(profitLossAmnt)}</ProfitLossPrice>
+          </ProfitLossContainer>
+        );
+      case "totalStocks":
+        return position.totalStocks;
+      case "investmentAmount":
+        return formatAmount(
+          calculateInvestmentAmount(position.buyPrice, position.totalStocks)
+        );
+      case "currentValue":
+        return formatAmount(
+          calculateCurrentValue(position.currentPrice, position.totalStocks)
+        );
+      case "stopLoss":
+        return position.stopLoss;
+      case "holdPeriod":
+        const holdingPeriod = calculateHoldingPeriod(
+          position.buyDate,
+          position.sellDate,
+          position.isDeleted
+        );
+        return (
+          <HoldingPeriodBoxContainer>
+            {Array.from({ length: holdingPeriod }, (_, index) => (
+              <HoldingPeriodBox key={index}>
+                <HoldingPeriodCount>{index + 1}</HoldingPeriodCount>
+              </HoldingPeriodBox>
+            ))}
+          </HoldingPeriodBoxContainer>
+        );
+      case "notes":
+        return parse(position.notes); // Parse and render the HTML content
+      case "images":
+        if (Array.isArray(position.images) && position.images.length > 0) {
+          return (
+            <>
+              <ImageList>
+                {position.images.map((image, index) => (
+                  <ImageListItem key={index}>
+                    <Image
+                      src={`http://localhost:3041/images/${image}`}
+                      alt={`Image ${index}`}
+                      onClick={() => handleImageClick(image)}
+                    />
+                  </ImageListItem>
+                ))}
+              </ImageList>
+              {modalOpen && (
+                <PositionImageModal
+                  onClose={closeModal}
+                  images={position.images}
+                >
+                  <ModalContent>
+                    <LargeImageContainer>
+                      <LargeImage
+                        src={`http://localhost:3041/images/${selectedImage}`}
+                        alt={`Large Image`}
+                      />
+                    </LargeImageContainer>
+                    <ImageList>
+                      {position.images.map((image, index) => (
+                        <ImageListItem key={index}>
+                          <Image
+                            src={`http://localhost:3041/images/${image}`}
+                            alt={`Thumbnail ${index}`}
+                            onClick={() => handleImageClick(image)}
+                          />
+                        </ImageListItem>
+                      ))}
+                    </ImageList>
+                  </ModalContent>
+                </PositionImageModal>
+              )}
+            </>
+          );
+        }
+        return null; // Return null if no images are available
+      case "actions":
+        return (
+          <>
+            <Button onClick={() => navigate(`/edit/${position.id}`)}>
+              Edit
+            </Button>
+            <Button onClick={handleDelete}>Delete</Button>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <Container>
-      <Summary positions={positions} />
-      <FilterContainer>
-        <label htmlFor='strategy-filter'>Filter by Strategy:</label>
-        <select
-          id='strategy-filter'
-          value={selectedStrategy}
-          onChange={handleStrategyChange}
-        >
-          <option value=''>All</option>
-          {getStrategyData().map((strategy) => (
-            <option key={strategy.value} value={strategy.value}>
-              {strategy.text}
-            </option>
-          ))}
-        </select>
-      </FilterContainer>
-      <CheckboxContainer>
-        {Object.keys(visibleColumns).map((column) => (
-          <CheckboxItem key={column}>
-            <input
-              type='checkbox'
-              id={column}
-              checked={visibleColumns[column].visible}
-              onChange={() => toggleColumnVisibility(column)}
-            />
-            <CheckboxLabel htmlFor={column}>
-              {visibleColumns[column].label}
-            </CheckboxLabel>
-          </CheckboxItem>
-        ))}
-      </CheckboxContainer>
-      <Table>
-        <HeaderRow>
-          <HeaderSrCell>#</HeaderSrCell>
-          {Object.keys(visibleColumns).map(
-            (column) =>
-              visibleColumns[column].visible && (
-                <HeaderCell
-                  key={column}
-                  onClick={() => handleSort(column)}
-                  style={{
-                    textAlign: visibleColumns[column].textAlign || "left",
-                  }}
-                >
-                  {visibleColumns[column].label}
-                </HeaderCell>
-              )
-          )}
-        </HeaderRow>
-        <TableBody>
-          {sortedPositions &&
-            sortedPositions.map((position, index) => (
-              <Row key={position.id} className={index % 2 === 0 ? "even" : ""}>
-                <ColSrCell>{index + 1}</ColSrCell>
-                {Object.keys(visibleColumns).map(
-                  (column) =>
-                    visibleColumns[column].visible && (
-                      <PositionItem
-                        key={column}
-                        column={column}
-                        position={position}
-                        deleteMutation={deleteMutation}
-                        setSelectedPosition={setSelectedPosition}
-                      />
-                    )
-                )}
-              </Row>
-            ))}
-        </TableBody>
-      </Table>
-      {selectedPosition && (
-        <PositionModal
-          position={selectedPosition}
-          onClose={() => setSelectedPosition(null)}
-        />
-      )}
-    </Container>
+    <Cell style={{ textAlign: textAlign }} className={customClass}>
+      {renderField()}
+    </Cell>
   );
 };
 
-export default PositionList;
+export default PositionItem;
