@@ -41,6 +41,18 @@ const InstructionSection = styled.div`
 const Home = () => {
   return (
     <Container>
+      <HeroBanner>
+        <img
+          src='http://localhost:3041/images/1723883651346_Screenshot 2024-08-17 at 12.32.28â¯PM.png'
+          alt='Image 0'
+          class='sc-eldOKa eEKtBs'
+        ></img>
+        <img
+          src='http://localhost:3041/images/1720190298925_Screenshot 2024-07-03 at 12.57.16â¯PM.png'
+          alt='Image 0'
+          class='sc-eldOKa eEKtBs'
+        ></img>
+      </HeroBanner>
       <InstructionTable>
         <InstructionSection>
           <h2>Buy when :- </h2>
@@ -95,29 +107,6 @@ const Home = () => {
           </List>
         </InstructionSection>
       </InstructionTable>
-
-      <HeroBanner>
-        <img
-          src='http://localhost:3041/images/1720190298925_Screenshot 2024-07-03 at 12.57.16â¯PM.png'
-          alt='Image 0'
-          class='sc-eldOKa eEKtBs'
-        ></img>
-        <img
-          src='http://localhost:3041/images/Screenshot 2024-07-31 at 2.00.56 PM.png'
-          alt='Image 0'
-          class='sc-eldOKa eEKtBs'
-        ></img>
-        <img
-          src='http://localhost:3041/images/Screenshot 2024-07-31 at 1.57.36 PM.png'
-          alt='Image 0'
-          class='sc-eldOKa eEKtBs'
-        ></img>
-        <img
-          src='http://localhost:3041/images/Screenshot 2024-07-31 at 1.57.49 PM.png'
-          alt='Image 0'
-          class='sc-eldOKa eEKtBs'
-        ></img>
-      </HeroBanner>
       <HeroBanner></HeroBanner>
     </Container>
   );

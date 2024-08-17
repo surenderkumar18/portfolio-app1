@@ -177,5 +177,60 @@
     ],
     "createdDate": "July 30, 2024 at 9:10 AM",
     "id": "1722310837875"
+  },
+  {
+    "stockName": "Tset",
+    "stockSymbol": "TEST",
+    "buyDate": "2024-08-17",
+    "sellDate": "",
+    "buyPrice": "100",
+    "sellPrice": "",
+    "currentPrice": "102",
+    "totalStocks": "100",
+    "stopLoss": "97.00",
+    "notes": "",
+    "isDeleted": "false",
+    "strategy": "",
+    "slPercentage": "3",
+    "stockId": "",
+    "profitLossPercentage": "",
+    "profitLossRupees": "",
+    "investmentAmount": "",
+    "currentValue": "",
+    "holdPeriod": "",
+    "images": [
+      "1723883651346_Screenshot 2024-08-17 at 12.32.28â¯PM.png"
+    ],
+    "createdDate": "August 17, 2024 at 12:47 PM",
+    "id": "1723879026711",
+    "deleteImages": "1723883393829_960x0.webp"
+  },
+  {
+    "stockName": "Test New",
+    "stockSymbol": "TESTNEW",
+    "buyDate": "2024-08-17",
+    "sellDate": "",
+    "buyPrice": "200",
+    "sellPrice": "",
+    "currentPrice": "300",
+    "totalStocks": "200",
+    "stopLoss": "190.00",
+    "notes": "",
+    "isDeleted": "false",
+    "strategy": "",
+    "slPercentage": "5",
+    "stockId": "",
+    "profitLossPercentage": "",
+    "profitLossRupees": "",
+    "investmentAmount": "",
+    "currentValue": "",
+    "holdPeriod": "",
+    "images": [
+      "1723883891234_Screenshot 2024-08-17 at 12.32.28â¯PM.png",
+      "1723883891238_Screenshot 2024-08-16 at 2.32.22â¯PM (2).png",
+      "1723883891241_Screenshot 2024-08-16 at 2.32.22â¯PM.png"
+    ],
+    "createdDate": "August 17, 2024 at 2:08 PM",
+    "id": "1723883891263"
   }
 ]
